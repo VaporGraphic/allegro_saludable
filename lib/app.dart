@@ -15,6 +15,8 @@ class AllegroSaludableApp extends StatelessWidget {
           ChangeNotifierProvider<PaymentProvider>(
               create: (_) => PaymentProvider()),
           ChangeNotifierProvider<MenuProvider>(create: (_) => MenuProvider()),
+          ChangeNotifierProvider<PrinterService>(
+              create: (_) => PrinterService()),
           ChangeNotifierProvider<PaymentCajaProvider>(
               create: (_) => PaymentCajaProvider()),
           ChangeNotifierProvider<OkToastService>(

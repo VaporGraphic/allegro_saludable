@@ -86,6 +86,7 @@ class PaymentCajaProvider extends ChangeNotifier {
 
   mostrarModalRevision(BuildContext context) {
     final orderService = Provider.of<OrderService>(context, listen: false);
+    final printerService = Provider.of<PrinterService>(context, listen: false);
 
     List<Widget> datosEnvio = [
       SpaceY(
@@ -263,7 +264,9 @@ class PaymentCajaProvider extends ChangeNotifier {
                     width: double.infinity,
                     padding: EdgeInsets.all(15),
                     child: ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          printerService.comprobarBluetooth(context);
+                        },
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
