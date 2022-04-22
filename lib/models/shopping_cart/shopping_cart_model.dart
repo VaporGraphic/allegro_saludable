@@ -6,6 +6,7 @@ class ItemCartModel {
   int? cantidad;
   String? icono;
   String? nombre;
+  CategoriaModel? categoria;
   VariacionModel? modeloSeleccionado;
   List<ComplementosSeleccionados>? listComplementos;
   List<ExtrasSeleccionados>? listExtras;
@@ -18,6 +19,7 @@ class ItemCartModel {
     this.cantidad,
     this.icono,
     this.nombre,
+    this.categoria,
     this.modeloSeleccionado,
     this.listComplementos,
     this.listExtras,
@@ -32,6 +34,7 @@ class ItemCartModel {
       'cantidad': cantidad,
       'icono': icono,
       'nombre': nombre,
+      'categoria': categoria?.toMap(),
       'modeloSeleccionado': modeloSeleccionado?.toMap(),
       'listComplementos': listComplementos?.map((x) => x.toMap()).toList(),
       'listExtras': listExtras?.map((x) => x.toMap()).toList(),
@@ -47,6 +50,9 @@ class ItemCartModel {
       cantidad: map['cantidad']?.toInt(),
       icono: map['icono'],
       nombre: map['nombre'],
+      categoria: map['categoria'] != null
+          ? CategoriaModel.fromMap(map['categoria'])
+          : null,
       modeloSeleccionado: map['modeloSeleccionado'] != null
           ? VariacionModel.fromMap(map['modeloSeleccionado'])
           : null,

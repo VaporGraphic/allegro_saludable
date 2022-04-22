@@ -1,7 +1,9 @@
+import 'package:allegro_saludable/views/providers.dart';
 import 'package:allegro_saludable/views/views.dart';
 import 'package:flutter/material.dart';
 
 import 'package:allegro_saludable/models/models.dart';
+import 'package:provider/provider.dart';
 
 class OrderService extends ChangeNotifier {
   OrderModel ordenActual = OrderModel(
@@ -14,10 +16,6 @@ class OrderService extends ChangeNotifier {
       switchTarjeta: false,
       referenciaTarjeta: '',
       fecha: null,
-      dia: null,
-      mes: null,
-      anio: null,
-      hora: null,
       itemsList: [],
       subtotalPrecio: 0,
       envioPrecio: 0,
@@ -95,6 +93,10 @@ class OrderService extends ChangeNotifier {
   //NAVEGAR A PAGO
 
   abrirPago(BuildContext context) {
+    final paymentProvider =
+        Provider.of<PaymentProvider>(context, listen: false);
+
+    paymentProvider.establecerForm(context);
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const PaymentView()),
@@ -134,7 +136,7 @@ class OrderService extends ChangeNotifier {
     notifyListeners();
   }
 
-  resetearModelo() {
+  resetearModelo(BuildContext context) {
     ordenActual = OrderModel(
         cliente: '',
         estadoPedido: 'Preparando',
@@ -145,16 +147,13 @@ class OrderService extends ChangeNotifier {
         switchTarjeta: false,
         referenciaTarjeta: '',
         fecha: null,
-        dia: null,
-        mes: null,
-        anio: null,
-        hora: null,
         itemsList: [],
         subtotalPrecio: 0,
         envioPrecio: 0,
         totalPrecio: 0,
         efectivoRecibido: 0,
         cambioEntregado: 0);
+
     notifyListeners();
   }
 }

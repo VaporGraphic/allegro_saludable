@@ -1,5 +1,6 @@
 import 'package:allegro_saludable/models/models.dart';
 import 'package:allegro_saludable/services/services.dart';
+import 'package:allegro_saludable/views/payment/subpages/caja/payment_caja_provider.dart';
 import 'package:allegro_saludable/views/views.dart';
 import 'package:allegro_saludable/widgets/widgets.dart';
 import 'package:flutter/material.dart';
@@ -29,6 +30,20 @@ class PaymentProvider extends ChangeNotifier {
   TextEditingController numeroController = TextEditingController();
   FocusNode numeroFocus = FocusNode();
 
+  establecerForm(BuildContext context) {
+    final orderService = Provider.of<OrderService>(context, listen: false);
+
+    clienteController.text = orderService.ordenActual.cliente!;
+    envioController.text = orderService.ordenActual.envioPrecio.toString();
+    ubicacionController.text = orderService.ordenActual.ubicacion!;
+    if (orderService.ordenActual.numero == null) {
+      numeroController.text = '';
+    } else {
+      numeroController.text = orderService.ordenActual.numero.toString();
+    }
+    notifyListeners();
+  }
+
   toggleResumen() {
     switchResumen = !switchResumen;
     print(switchResumen);
@@ -37,6 +52,8 @@ class PaymentProvider extends ChangeNotifier {
 
   abrirCaja(BuildContext context, OrderModel orden) {
     final okToastService = Provider.of<OkToastService>(context, listen: false);
+    final paymentCajaProvider =
+        Provider.of<PaymentCajaProvider>(context, listen: false);
 
     bool errorCounter = false;
 
@@ -64,6 +81,8 @@ class PaymentProvider extends ChangeNotifier {
 
     print(errorCounter);
     if (errorCounter == false) {
+      paymentCajaProvider.establecerCaja(context);
+
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const PaymentCajaView()),

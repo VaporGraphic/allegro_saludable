@@ -15,10 +15,7 @@ class OrderModel {
   double? cambioEntregado;
   String? referenciaTarjeta;
   DateTime? fecha;
-  DateTime? dia;
-  DateTime? mes;
-  DateTime? anio;
-  DateTime? hora;
+
   List<ItemCartModel>? itemsList;
   double? subtotalPrecio;
   double? envioPrecio;
@@ -37,10 +34,6 @@ class OrderModel {
     this.cambioEntregado,
     this.referenciaTarjeta,
     this.fecha,
-    this.dia,
-    this.mes,
-    this.anio,
-    this.hora,
     this.itemsList,
     this.subtotalPrecio,
     this.envioPrecio,
@@ -61,10 +54,6 @@ class OrderModel {
       'cambioEntregado': cambioEntregado,
       'codigoTarjeta': referenciaTarjeta,
       'fecha': fecha?.millisecondsSinceEpoch,
-      'dia': dia?.millisecondsSinceEpoch,
-      'mes': mes?.millisecondsSinceEpoch,
-      'anio': anio?.millisecondsSinceEpoch,
-      'hora': hora?.millisecondsSinceEpoch,
       'itemsList': itemsList?.map((x) => x.toMap()).toList(),
       'subtotalPrecio': subtotalPrecio,
       'envioPrecio': envioPrecio,
@@ -87,18 +76,6 @@ class OrderModel {
       referenciaTarjeta: map['codigoTarjeta'],
       fecha: map['fecha'] != null
           ? DateTime.fromMillisecondsSinceEpoch(map['fecha'])
-          : null,
-      dia: map['dia'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['dia'])
-          : null,
-      mes: map['mes'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['mes'])
-          : null,
-      anio: map['anio'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['anio'])
-          : null,
-      hora: map['hora'] != null
-          ? DateTime.fromMillisecondsSinceEpoch(map['hora'])
           : null,
       itemsList: map['itemsList'] != null
           ? List<ItemCartModel>.from(

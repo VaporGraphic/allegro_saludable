@@ -80,10 +80,50 @@ class ResponisiveCards {
     return closestValue;
   }
 
+  bool filtroBusqueda(
+      {required String busquedaString,
+      CategoriaModel? categoriaModel,
+      required ProductoModel productoModelo}) {
+    int totalEtiquetas = 0;
+    int matches = 0;
+
+    if (busquedaString.isNotEmpty) {
+      totalEtiquetas++;
+    }
+    if (categoriaModel != null) {
+      totalEtiquetas++;
+    }
+
+    if (productoModelo.nombre
+            .toLowerCase()
+            .contains(busquedaString.toLowerCase()) &&
+        busquedaString.isNotEmpty) {
+      matches++;
+    }
+
+    if (categoriaModel != null) {
+      if (productoModelo.categoriaModel.nombre == categoriaModel.nombre &&
+          productoModelo.categoriaModel.firebaseId ==
+              categoriaModel.firebaseId) {
+        matches++;
+      }
+    }
+
+    print('total $totalEtiquetas - matches $matches');
+
+    if (totalEtiquetas == matches) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   List<Widget> getList({
     required BuildContext context,
     required List<ProductoModel> listCards,
     required double currentSize,
+    required String busquedaString,
+    CategoriaModel? categoriaModel,
     int? sm,
     int? md,
     int? lg,
@@ -118,6 +158,11 @@ class ResponisiveCards {
               for (var j = i; j < i + size; j++)
                 j < listCards.length
                     ? ItemCard(
+                        mostrar: filtroBusqueda(
+                            categoriaModel: categoriaModel,
+                            busquedaString: busquedaString,
+                            productoModelo:
+                                ProductoModel.fromMap(listCards[j].toMap())),
                         modelo: ProductoModel.fromMap(listCards[j].toMap()),
                       )
                     : Expanded(

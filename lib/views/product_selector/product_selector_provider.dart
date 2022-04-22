@@ -17,10 +17,12 @@ class ProductSelectorProvider extends ChangeNotifier {
     comentariosController.text = modelo.notaExtra!;
   }
 
-  establecerModelo(ProductoModel modelo) {
+  establecerModelo(ProductoModel modelo, VariacionModel variacionSeleccionado) {
     indexEditable = null;
 
     switchResumen = false;
+
+    comentariosController.clear();
 
     List<ComplementosSeleccionados> listComplementos = [];
     List<ExtrasSeleccionados> listExtras = [];
@@ -39,16 +41,17 @@ class ProductSelectorProvider extends ChangeNotifier {
     }
 
     itemCartModel = ItemCartModel(
+        categoria: modelo.categoriaModel,
         cantidad: 1,
         icono: modelo.icono,
         nombre: modelo.nombre,
-        modeloSeleccionado: modelo.listVariaciones[0],
+        modeloSeleccionado: variacionSeleccionado,
         listComplementos: listComplementos,
         listExtras: listExtras,
         notaExtra: '',
         extrasPrecio: 0,
-        subTotalPrecio: modelo.listVariaciones[0].precio,
-        totalPrecio: modelo.listVariaciones[0].precio);
+        subTotalPrecio: variacionSeleccionado.precio,
+        totalPrecio: variacionSeleccionado.precio);
 
     notifyListeners();
   }
@@ -90,9 +93,10 @@ class ProductSelectorProvider extends ChangeNotifier {
   //------------ CANTIDAD PRODUCTOS ------------
 
   sumarProducto() {
-    if (itemCartModel.cantidad! < itemCartModel.modeloSeleccionado!.stock) {
+/*    if (itemCartModel.cantidad! < itemCartModel.modeloSeleccionado!.stock) {
       itemCartModel.cantidad = itemCartModel.cantidad! + 1;
-    }
+    } */
+    itemCartModel.cantidad = itemCartModel.cantidad! + 1;
 
     actualizarPrecio();
   }

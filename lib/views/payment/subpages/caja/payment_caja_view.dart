@@ -112,6 +112,8 @@ class PaymentCajaView extends StatelessWidget {
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 15),
         child: TextField(
+          autofocus: true,
+          controller: paymentCajaProvider.referenciaController,
           onChanged: (value) {
             paymentCajaProvider.actualizarReferenciaPago(context);
           },

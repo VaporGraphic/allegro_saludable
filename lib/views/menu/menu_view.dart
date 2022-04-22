@@ -1,3 +1,4 @@
+import 'package:allegro_saludable/services/firebase/inventario/inventario_crud_service.dart';
 import 'package:allegro_saludable/views/menu/widgets/responsive_cards/responsive_cards_widget.dart';
 import 'package:allegro_saludable/views/menu/widgets/tags/tags_widgets.dart';
 import 'package:allegro_saludable/views/providers.dart';
@@ -58,6 +59,7 @@ class ItemsSearch extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final menuProvider = Provider.of<MenuProvider>(context);
+    final inventarioCrudService = Provider.of<InventarioCrudService>(context);
 
     return LayoutBuilder(builder: ((context, constraints) {
       return ListView(
@@ -82,8 +84,19 @@ class ItemsSearch extends StatelessWidget {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 15),
             child: TextField(
+              controller: menuProvider.busquedaController,
+              onChanged: (value) {
+                menuProvider.busquedaDebounce(context);
+              },
               decoration: InputDecoration(
-                  isDense: false,
+                  suffixIcon: menuProvider.busquedaController.text.isNotEmpty
+                      ? IconButton(
+                          onPressed: () {
+                            menuProvider.busquedaController.clear();
+                            menuProvider.busquedaDebounce(context);
+                          },
+                          icon: Icon(Icons.close_rounded))
+                      : null,
                   filled: true,
                   prefixIcon: Icon(Icons.search),
                   hintText: 'Buscar en el menú'),
@@ -94,21 +107,54 @@ class ItemsSearch extends StatelessWidget {
             width: double.infinity,
             height: 40,
             child: ListView(
+              physics: BouncingScrollPhysics(),
               padding: EdgeInsets.symmetric(horizontal: 15),
               scrollDirection: Axis.horizontal,
-              children: [for (var i = 0; i < 100; i++) TagsWidget()],
+              children: [
+                for (var categoria in menuProvider.ListCategorias)
+                  TagsWidget(
+                    nombre: categoria.nombre,
+                    onTap: () {
+                      if (menuProvider.selectedTag == null) {
+                        menuProvider.seleccionarTag(categoria);
+                      } else {
+                        menuProvider.eliminarTag();
+                      }
+                    },
+                    isSelected: menuProvider.selectedTag == categoria,
+                    isVisible: menuProvider.selectedTag == categoria ||
+                        menuProvider.selectedTag == null,
+                  ),
+              ],
             ),
           ),
           SpaceY(),
-          ...ResponisiveCards().getList(
-              sm: 1,
-              md: 2,
-              lg: 4,
-              xl: 5,
-              xxl: 6,
-              context: context,
-              listCards: menuProvider.listProductos,
-              currentSize: constraints.maxWidth)
+          if (inventarioCrudService.cargandoProductos == false)
+            ...ResponisiveCards().getList(
+                sm: 1,
+                md: 2,
+                lg: 4,
+                xl: 5,
+                xxl: 6,
+                busquedaString: menuProvider.busquedaController.text,
+                categoriaModel: menuProvider.selectedTag,
+                context: context,
+                listCards: menuProvider.switchSearch == false
+                    ? inventarioCrudService.listInventario
+                    : menuProvider.listProductosFiltrados,
+                currentSize: constraints.maxWidth)
+          else
+            Column(
+              children: [
+                SpaceY(
+                  percent: 2,
+                ),
+                CircularProgressIndicator(),
+              ],
+            ),
+          SpaceY(
+            percent: 6,
+          ),
         ],
       );
     }));

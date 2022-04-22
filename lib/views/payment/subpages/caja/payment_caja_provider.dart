@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 class PaymentCajaProvider extends ChangeNotifier {
   //PAYMENT STRING
   String paymentString = '0';
+
+  bool switchOrdenLoading = false;
   //CONTROLLER
 
   TextEditingController referenciaController = TextEditingController();
@@ -24,7 +26,7 @@ class PaymentCajaProvider extends ChangeNotifier {
         paymentString = '0';
       }
     } else {
-      if (paymentString == '0' && button != '.') {
+      if (double.parse(paymentString) == 0 && button != '.') {
         paymentString = '';
       }
       paymentString = paymentString + button;
@@ -57,6 +59,17 @@ class PaymentCajaProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  establecerCaja(BuildContext context) {
+    final orderService = Provider.of<OrderService>(context, listen: false);
+    paymentString = orderService.ordenActual.efectivoRecibido.toString();
+    referenciaController.clear();
+    orderService.ordenActual.referenciaTarjeta = '';
+    if (paymentString == '0.0') {
+      paymentString = '0';
+    }
+    notifyListeners();
+  }
+
   revisarPago(BuildContext context) {
     final orderService = Provider.of<OrderService>(context, listen: false);
     final okToastService = Provider.of<OkToastService>(context, listen: false);
@@ -72,7 +85,7 @@ class PaymentCajaProvider extends ChangeNotifier {
         errores = true;
       }
     } else {
-      if (referenciaController.text.isEmpty) {
+      if (orderService.ordenActual.referenciaTarjeta!.isEmpty) {
         okToastService.showOkToast(
             mensaje: 'Escribe la referencia del pago con tarjeta');
         errores = true;
@@ -87,6 +100,8 @@ class PaymentCajaProvider extends ChangeNotifier {
   mostrarModalRevision(BuildContext context) {
     final orderService = Provider.of<OrderService>(context, listen: false);
     final printerService = Provider.of<PrinterService>(context, listen: false);
+    final cajaCrudService =
+        Provider.of<CajaCrudService>(context, listen: false);
 
     List<Widget> datosEnvio = [
       SpaceY(
@@ -146,143 +161,284 @@ class PaymentCajaProvider extends ChangeNotifier {
       ),
     ];
 
+    List<Widget> datosEfectivo = [
+      SpaceY(
+        percent: .5,
+      ),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          TextNormal(
+            'Efectivo recibido:',
+            color: Colors.grey,
+          ),
+          TextNormal('${orderService.ordenActual.efectivoRecibido}')
+        ],
+      ),
+      SpaceY(
+        percent: .5,
+      ),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          TextNormal(
+            'Cambio entregado:',
+            color: Colors.grey,
+          ),
+          TextNormal('${orderService.ordenActual.cambioEntregado}')
+        ],
+      ),
+    ];
+
+    List<Widget> datosTarjeta = [
+      SpaceY(
+        percent: .5,
+      ),
+      Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          TextNormal(
+            'Referencia tarjeta:',
+            color: Colors.grey,
+          ),
+          TextNormal('${orderService.ordenActual.referenciaTarjeta}')
+        ],
+      ),
+    ];
+
     showModalBottomSheet<void>(
+        isScrollControlled: true,
         backgroundColor: Colors.transparent,
         context: context,
         builder: (BuildContext context) {
           return Container(
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(15), color: Colors.white),
+            width: double.infinity,
             height: double.infinity,
-            child: Material(
-              color: Colors.transparent,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SpaceY(),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 15),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(child: TextLead('Revisar orden')),
-                        InkWell(
-                            borderRadius: BorderRadius.circular(100),
-                            onTap: () => Navigator.pop(context),
-                            child: Padding(
-                              padding: const EdgeInsets.all(7.5),
-                              child: Icon(Icons.close_rounded),
-                            ))
-                      ],
-                    ),
-                  ),
-                  Divider(),
-                  Expanded(
-                      child: Padding(
-                    padding: const EdgeInsets.all(15),
-                    child:
-                        ListView(physics: BouncingScrollPhysics(), children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Column(
+              children: [
+                SpaceY(
+                  percent: 4,
+                ),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        color: Colors.white),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          TextNormal(
-                            'Cliente:',
-                            color: Colors.grey,
-                          ),
-                          TextNormal('${orderService.ordenActual.cliente}')
-                        ],
-                      ),
-                      if (orderService.ordenActual.switchEnvio == true)
-                        ...datosEnvio
-                      else
-                        ...datosLocal,
-                      SpaceY(
-                        percent: .5,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          TextNormal(
-                            'Subtotal:',
-                            color: Colors.grey,
-                          ),
-                          TextNormal(
-                              '\$${orderService.ordenActual.subtotalPrecio}')
-                        ],
-                      ),
-                      SpaceY(
-                        percent: .5,
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          TextNormal(
-                            'Total:',
-                          ),
-                          TextLead('\$${orderService.ordenActual.totalPrecio}')
-                        ],
-                      ),
-                      Divider(),
-                      SpaceY(),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          TextNormal(
-                            'Productos seleccionados:',
-                            color: Colors.grey,
-                          ),
-                          TextNormal(
-                              '${orderService.ordenActual.itemsList!.length}')
-                        ],
-                      ),
-                      SpaceY(),
-                      for (var producto in orderService.ordenActual.itemsList!)
-                        Column(
-                          children: [
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          SpaceY(),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 15),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Expanded(
-                                  child: TextNormal(
-                                    '(${producto.cantidad!}) ${producto.nombre!} ${producto.modeloSeleccionado!.subnombre}',
-                                    color: Colors.grey,
-                                    maxLines: 2,
-                                  ),
-                                ),
-                                SpaceX(
-                                  percent: .5,
-                                ),
-                                TextNormal('\$${producto.totalPrecio!}')
+                                Expanded(child: TextLead('Revisar orden')),
+                                InkWell(
+                                    borderRadius: BorderRadius.circular(100),
+                                    onTap: () => Navigator.pop(context),
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(7.5),
+                                      child: Icon(Icons.close_rounded),
+                                    ))
                               ],
                             ),
-                          ],
-                        )
-                    ]),
-                  )),
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.all(15),
-                    child: ElevatedButton(
-                        onPressed: () {
-                          printerService.comprobarBluetooth(context);
-                        },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.shopping_bag_outlined),
-                            SpaceX(
-                              percent: .5,
-                            ),
-                            TextNormal(
-                              'Crear orden',
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ],
-                        )),
-                  )
-                ],
-              ),
+                          ),
+                          Divider(),
+                          Expanded(
+                              child: Padding(
+                            padding: const EdgeInsets.all(15),
+                            child: ListView(
+                                physics: BouncingScrollPhysics(),
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      TextNormal(
+                                        'Cliente:',
+                                        color: Colors.grey,
+                                      ),
+                                      TextNormal(
+                                          '${orderService.ordenActual.cliente}')
+                                    ],
+                                  ),
+                                  if (orderService.ordenActual.switchEnvio ==
+                                      true)
+                                    ...datosEnvio
+                                  else
+                                    ...datosLocal,
+                                  SpaceY(
+                                    percent: .5,
+                                  ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      TextNormal(
+                                        'Subtotal:',
+                                        color: Colors.grey,
+                                      ),
+                                      TextNormal(
+                                          '\$${orderService.ordenActual.subtotalPrecio}')
+                                    ],
+                                  ),
+                                  if (orderService.ordenActual.switchTarjeta ==
+                                      false)
+                                    ...datosEfectivo
+                                  else
+                                    ...datosTarjeta,
+                                  SpaceY(
+                                    percent: .5,
+                                  ),
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      TextNormal(
+                                        'Total:',
+                                      ),
+                                      TextLead(
+                                        '\$${orderService.ordenActual.totalPrecio}',
+                                        fontWeight: FontWeight.bold,
+                                      )
+                                    ],
+                                  ),
+                                  Divider(),
+                                  SpaceY(),
+                                  Row(
+                                    children: [
+                                      TextNormal(
+                                        'Productos seleccionados:',
+                                      ),
+                                      SpaceX(
+                                        percent: .5,
+                                      ),
+                                      TextNormal(
+                                          '${orderService.ordenActual.itemsList!.length}')
+                                    ],
+                                  ),
+                                  SpaceY(),
+                                  for (var producto
+                                      in orderService.ordenActual.itemsList!)
+                                    Column(
+                                      children: [
+                                        Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.stretch,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      TextSmall(
+                                                        'Cantidad: ${producto.cantidad!}',
+                                                        color: Colors.grey,
+                                                      ),
+                                                      TextNormal(
+                                                        'Costo \$${producto.totalPrecio!}',
+                                                      )
+                                                    ],
+                                                  ),
+                                                  TextNormal(
+                                                    '${producto.nombre!} ${producto.modeloSeleccionado!.subnombre} - \$${producto.modeloSeleccionado!.precio}',
+                                                    color: Colors.black
+                                                        .withOpacity(.70),
+                                                    maxLines: 10,
+                                                  ),
+                                                  for (var complemento
+                                                      in producto
+                                                          .listComplementos!)
+                                                    if (complemento
+                                                            .seleccionado ==
+                                                        true)
+                                                      TextSmall(
+                                                        '    -${complemento.complementoData.nombre}',
+                                                        color: Colors.grey,
+                                                      ),
+                                                  for (var extra
+                                                      in producto.listExtras!)
+                                                    if (extra.cantidad > 0)
+                                                      TextSmall(
+                                                        '    -(x${extra.cantidad}) ${extra.extraData.nombre} - ${extra.subtotal}',
+                                                        color: Colors.grey,
+                                                      )
+                                                ],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 7.5),
+                                          child: Divider(
+                                            color: Colors.grey.shade100,
+                                          ),
+                                        )
+                                      ],
+                                    )
+                                ]),
+                          )),
+                          Container(
+                            width: double.infinity,
+                            padding: EdgeInsets.all(15),
+                            child: ElevatedButton(
+                                onPressed: () {
+                                  showDialog(
+                                      barrierDismissible: false,
+                                      context: context,
+                                      builder: (context) {
+                                        return AlertDialog(
+                                          alignment: Alignment.center,
+                                          content: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.center,
+                                            children: [
+                                              SpaceY(),
+                                              CircularProgressIndicator(),
+                                              SpaceY(),
+                                              TextNormal('Generando orden')
+                                            ],
+                                          ),
+                                        );
+                                      });
+                                  //ASD
+                                  cajaCrudService.crearOrdenCaja(
+                                      context, orderService.ordenActual);
+                                },
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(Icons.shopping_bag_outlined),
+                                    SpaceX(
+                                      percent: .5,
+                                    ),
+                                    TextNormal(
+                                      'Crear orden',
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ],
+                                )),
+                          )
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           );
         });

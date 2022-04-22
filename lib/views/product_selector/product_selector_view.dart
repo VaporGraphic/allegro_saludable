@@ -376,23 +376,27 @@ class ProductSelectorView extends StatelessWidget {
                         fontWeight: FontWeight.bold,
                       )),
                       IconButton(
-                          onPressed:
+                          onPressed: () {
+                            print('asd');
+                            productSelectorProvider.sumarProducto();
+                          },
+                          /*
                               productSelectorProvider.itemCartModel.cantidad! <
                                       productSelectorProvider.itemCartModel
                                           .modeloSeleccionado!.stock
                                   ? () {
                                       productSelectorProvider.sumarProducto();
                                     }
-                                  : null,
-                          icon: Icon(
-                            Icons.add_rounded,
-                            color: productSelectorProvider
+                                  : null, */
+                          icon: Icon(Icons.add_rounded,
+                              color: Colors.deepPurpleAccent
+                              /* productSelectorProvider
                                         .itemCartModel.cantidad! <
                                     productSelectorProvider
                                         .itemCartModel.modeloSeleccionado!.stock
                                 ? Colors.deepPurpleAccent
-                                : Colors.grey,
-                          )),
+                                : Colors.grey,*/
+                              )),
                     ],
                   )),
                   SpaceX(
@@ -403,21 +407,13 @@ class ProductSelectorView extends StatelessWidget {
                         ? ElevatedButton(
                             style:
                                 ElevatedButton.styleFrom(primary: Colors.black),
-                            onPressed: productSelectorProvider.itemCartModel
-                                        .modeloSeleccionado!.stock >
-                                    0
-                                ? () {
-                                    productSelectorProvider.toggleResumen();
-                                  }
-                                : null,
-                            child: productSelectorProvider.itemCartModel
-                                        .modeloSeleccionado!.stock >
-                                    0
-                                ? TextNormal(
-                                    'Total \$${productSelectorProvider.itemCartModel.totalPrecio}',
-                                    fontWeight: FontWeight.bold,
-                                  )
-                                : TextNormal('Producto agotado'))
+                            onPressed: () {
+                              productSelectorProvider.toggleResumen();
+                            },
+                            child: TextNormal(
+                              'Total \$${productSelectorProvider.itemCartModel.totalPrecio}',
+                              fontWeight: FontWeight.bold,
+                            ))
                         : ElevatedButton(
                             onPressed: () {
                               if (productSelectorProvider.indexEditable !=
